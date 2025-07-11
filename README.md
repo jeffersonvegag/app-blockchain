@@ -87,7 +87,20 @@ docker-compose up -d
 docker-compose --profile blockchain up -d
 ```
 
-4. **Acceder a la aplicación**
+4. **Crear el primer administrador**
+```bash
+# Usar la API para crear el primer admin
+curl -X POST http://localhost:8000/auth/create-first-admin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@fumigacion.com",
+    "password": "admin123",
+    "full_name": "Administrador Principal",
+    "phone": "+1234567890"
+  }'
+```
+
+5. **Acceder a la aplicación**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8000
 - Documentación API: http://localhost:8000/docs
@@ -126,11 +139,20 @@ npm run deploy
 5. Recibir certificados NFT al completar servicios
 
 ### Para Administradores
-1. Gestionar disponibilidad del calendario
-2. Aprobar/rechazar citas de clientes
-3. Actualizar estados de servicios
-4. Registrar servicios en blockchain
-5. Emitir certificados NFT
+1. **Gestionar citas**: Ver todas las citas con información del cliente
+2. **Aprobar/Rechazar**: Botones para aprobar o rechazar citas pendientes
+3. **Completar servicios**: Marcar servicios como completados
+4. **Registrar en blockchain**: Crear registros inmutables de citas
+5. **Crear otros admins**: Usar endpoint `/auth/create-admin`
+
+### Endpoints Administrativos
+
+- `POST /auth/create-first-admin`: Crear primer admin (sin autenticación)
+- `POST /auth/create-admin`: Crear admin adicional (requiere auth admin)
+- `PUT /appointments/{id}/status`: Actualizar estado de cita
+- `GET /appointments`: Ver todas las citas (admin) o solo propias (cliente)
+- `POST /blockchain/register-appointment`: Registrar cita en blockchain
+- `GET /blockchain/status`: Verificar estado de conexión blockchain
 
 ## Estructura del Proyecto
 
@@ -155,19 +177,68 @@ app-blockchain/
 └── README.md          # Este archivo
 ```
 
-## Blockchain Integration
+## Integración Blockchain
 
-El proyecto utiliza contratos inteligentes en Polygon para:
+### ¿Qué hace el Blockchain?
 
-- **Registro de Citas**: Cada cita se registra de forma inmutable
-- **Certificados NFT**: Comprobantes digitales verificables
-- **Trazabilidad**: Historial completo de servicios
-- **Transparencia**: Todas las transacciones son verificables
+El blockchain **SÍ** se utiliza para:
 
-### Contrato Principal
-- **FumigationService.sol**: Gestión de citas y certificados
-- **Red**: Polygon (MATIC)
-- **Estándar**: ERC-721 para certificados NFT
+1. **Registro Inmutable de Citas**: Cada cita aprobada se registra permanentemente
+2. **Certificados NFT**: Al completar un servicio, se genera automáticamente un certificado digital verificable
+3. **Trazabilidad**: Historial completo e inalterable de todos los servicios
+4. **Transparencia**: Todas las transacciones son públicamente verificables
+
+### ¿Qué NO hace el Blockchain?
+
+El blockchain **NO** se utiliza para:
+
+1. **Almacenamiento de Datos Personales**: Emails, teléfonos, etc. se guardan en base de datos tradicional
+2. **Proceso de Autenticación**: Login/registro usan JWT tradicional
+3. **Gestión de Calendario**: Disponibilidad se maneja en PostgreSQL
+4. **Datos Sensibles**: Por privacidad, solo se registran IDs y metadatos
+
+### Arquitectura Híbrida
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   PostgreSQL    │    │   FastAPI       │    │   Polygon       │
+│                 │    │                 │    │                 │
+│ • Usuarios      │◄───┤ • Autenticación │◄───┤ • Citas         │
+│ • Citas         │    │ • API REST      │    │ • Certificados  │
+│ • Sesiones      │    │ • Web3.py       │    │ • Inmutabilidad │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### Flujo de Trabajo
+
+1. **Cliente registra cita** → Base de datos (PostgreSQL)
+2. **Admin aprueba cita** → Base de datos actualizada
+3. **Sistema registra en blockchain** → Transacción en Polygon
+4. **Servicio completado** → Certificado NFT generado automáticamente
+5. **Cliente recibe certificado** → Token ERC-721 en su wallet
+
+### Configuración Blockchain
+
+Para activar blockchain real:
+
+```env
+# Backend/.env
+BLOCKCHAIN_RPC_URL=https://polygon-mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID
+BLOCKCHAIN_PRIVATE_KEY=your_private_key_here
+CONTRACT_ADDRESS=deployed_contract_address
+```
+
+**Nota**: Sin configuración blockchain, el sistema funciona en modo simulado con hashes falsos.
+
+### Contrato Inteligente
+
+- **Archivo**: `service-blockchain/contracts/FumigationService.sol`
+- **Red**: Polygon Mainnet
+- **Estándar**: ERC-721 (certificados NFT)
+- **Funciones**:
+  - `createAppointment()`: Registra cita en blockchain
+  - `updateAppointmentStatus()`: Actualiza estado
+  - `_issueCertificate()`: Genera NFT automáticamente
 
 ## Contribución
 

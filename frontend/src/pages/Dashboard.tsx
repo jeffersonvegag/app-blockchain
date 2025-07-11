@@ -15,6 +15,12 @@ interface Appointment {
   status: string
   blockchain_tx: string | null
   created_at: string
+  user?: {
+    id: number
+    email: string
+    full_name: string
+    phone: string
+  }
 }
 
 const Dashboard = () => {
@@ -168,6 +174,11 @@ const Dashboard = () => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
+                {user?.role === 'admin' && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cliente
+                  </th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Servicio
                 </th>
@@ -193,6 +204,19 @@ const Dashboard = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {appointments.map((appointment) => (
                 <tr key={appointment.id} className="hover:bg-gray-50">
+                  {user?.role === 'admin' && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {appointment.user?.full_name || 'Usuario desconocido'}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {appointment.user?.email}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {appointment.user?.phone}
+                      </div>
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {appointment.service_type}
@@ -257,24 +281,24 @@ const Dashboard = () => {
                           <>
                             <button
                               onClick={() => updateAppointmentStatus(appointment.id, 'approved')}
-                              className="text-green-600 hover:text-green-900"
+                              className="bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-green-200 transition-colors"
                             >
-                              Aprobar
+                              ✓ Aprobar
                             </button>
                             <button
                               onClick={() => updateAppointmentStatus(appointment.id, 'cancelled')}
-                              className="text-red-600 hover:text-red-900"
+                              className="bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-red-200 transition-colors"
                             >
-                              Cancelar
+                              ✗ Rechazar
                             </button>
                           </>
                         )}
                         {appointment.status === 'approved' && (
                           <button
                             onClick={() => updateAppointmentStatus(appointment.id, 'completed')}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-sm font-medium hover:bg-blue-200 transition-colors"
                           >
-                            Completar
+                            ✓ Completar
                           </button>
                         )}
                       </div>
