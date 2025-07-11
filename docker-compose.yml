@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: fumigation_db
+      POSTGRES_USER: fumigation_user
+      POSTGRES_PASSWORD: fumigation_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fumigation-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://fumigation_user:fumigation_pass@db:5432/fumigation_db
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+    depends_on:
+      - db
+    networks:
+      - fumigation-network
+    volumes:
+      - ./backend:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - fumigation-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+
+  blockchain:
+    build: ./service-blockchain
+    environment:
+      - POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID
+      - PRIVATE_KEY=your_private_key_here
+    networks:
+      - fumigation-network
+    volumes:
+      - ./service-blockchain:/app
+    profiles:
+      - blockchain
+
+volumes:
+  postgres_data:
+
+networks:
+  fumigation-network:
+    driver: bridge
