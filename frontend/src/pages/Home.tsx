@@ -1,13 +1,14 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Shield, Users, Award, Calendar } from 'lucide-react'
+import portadaBackground from '../utils/portada-background.jpg'
 
 const Home = () => {
   return (
     <div className="space-y-16">
       <section 
         className="relative bg-cover bg-center h-96 rounded-lg flex items-center justify-center"
-        style={{ backgroundImage: "url('/utils/portada-background.jpg')" }}
+        style={{ backgroundImage: `url(${portadaBackground})` }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg"></div>
         <div className="relative z-10 text-center text-white px-4">
