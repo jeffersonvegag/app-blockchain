@@ -26,12 +26,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/fumigation_db")
+# Configuración directa para Render
+DATABASE_URL = "postgresql://blockchain_flcg_user:iLx44fReiKMHR44Ho3bBd3c8EiR9dQWy@dpg-d1rckb7fte5s73d0bnhg-a.oregon-postgres.render.com/blockchain_flcg"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key")
+JWT_SECRET = "blockchain-fumigation-jwt-secret-2024"
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
@@ -103,7 +104,10 @@ class Appointment(Base):
     blockchain_tx = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-Base.metadata.create_all(bind=engine)
+# Mover la creación de tablas dentro de una función de startup
+@app.on_event("startup")
+async def startup_event():
+    Base.metadata.create_all(bind=engine)
 
 def get_db():
     db = SessionLocal()
@@ -453,6 +457,10 @@ async def get_blockchain_status():
             return {"connected": False, "error": str(e)}
     else:
         return {"connected": False, "error": "Blockchain not configured"}
+
+@app.get("/")
+async def root():
+    return {"message": "Fumigation Blockchain API is running"}
 
 if __name__ == "__main__":
     import uvicorn
