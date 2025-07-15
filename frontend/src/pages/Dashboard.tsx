@@ -4,8 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { Calendar, Clock, MapPin, CheckCircle, XCircle, AlertCircle, Link as LinkIcon } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
+const API_URL = 'https://app-blockchain.onrender.com';
 interface Appointment {
   id: number
   service_type: string

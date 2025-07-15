@@ -3,8 +3,7 @@ import axios from 'axios'
 import { Shield, Bug, Droplets, Home, Users, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
+const API_URL = 'https://app-blockchain.onrender.com';
 interface Service {
   id: number
   name: string

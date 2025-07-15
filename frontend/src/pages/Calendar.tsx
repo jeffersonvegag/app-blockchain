@@ -3,8 +3,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { Calendar as CalendarIcon, Clock, MapPin, MessageSquare, Send } from 'lucide-react'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-
+const API_URL = 'https://app-blockchain.onrender.com';
 interface CalendarDay {
   date: string
   available: boolean
